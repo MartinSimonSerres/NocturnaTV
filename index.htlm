@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>NocturnaTV</title>
+
+https://cdn.jsdelivr.net/npm/@supabase/supabase-jsscript>
+
+<style>
+
+body{
+background:#050505;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+h1{
+color:red;
+}
+
+textarea,
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+padding:10px;
+background:red;
+color:white;
+border:none;
+}
+
+.story{
+border-left:4px solid red;
+padding:10px;
+margin:10px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>☠ NocturnaTV ☠</h1>
+
+<h2>Publier une histoire</h2>
+
+<input
+id="titre"
+placeholder="Titre">
+
+<textarea
+id="contenu"
+rows="5"
+placeholder="Ton histoire...">
+</textarea>
+
+<button onclick="publier()">
+Publier
+</button>
+
+<hr>
+
+<h2>Histoires</h2>
+
+<div id="stories"></div>
+
+<script>
+
+const SUPABASE_URL =
+"TON_URL_SUPABASE";
+
+const SUPABASE_KEY =
+"TA_CLE_SUPABASE";
+
+const supabase =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+async function publier(){
+
+const titre =
+document.getElementById("titre").value;
+
+const contenu =
+document.getElementById("contenu").value;
+
+await supabase
+.from("stories")
+.insert([
+{
+titre,
+contenu
+}
+]);
+
+charger();
+
+}
+
+async function charger(){
+
+const {
+data
+}
+=
+await supabase
+.from("stories")
+.select("*")
+.order("id",{
+ascending:false
+});
+
+let html = "";
+
+data.forEach(story=>{
+
+html +=
+`
+<div class="story">
+<h3>${story.titre}</h3>
+<p>${story.contenu}</p>
+</div>
+`;
+
+});
+
+document
+.getElementById("stories")
+.innerHTML = html;
+
+}
+
+charger();
+
+</script>
+
+</body>
+</html>
