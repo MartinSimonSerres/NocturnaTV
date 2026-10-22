@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histoires - NocturnaTV</title>
+
+<style>
+
+body{
+    background:#050505;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+}
+
+header{
+    background:#120000;
+    padding:20px;
+    text-align:center;
+    border-bottom:2px solid red;
+}
+
+h1{
+    color:red;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.story-form{
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:30px;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:10px;
+    background:#222;
+    color:white;
+    border:none;
+}
+
+button{
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    cursor:pointer;
+}
+
+.story{
+    background:#111;
+    border-left:4px solid red;
+    padding:15px;
+    margin-bottom:20px;
+    border-radius:5px;
+}
+
+.retour{
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+
+<h1>📖 Histoires d'Horreur</h1>
+
+<p>
+Partage tes cauchemars...
+</p>
+
+<a class="retour" href="index.html">
+← Retour à l'accueil
+</a>
+
+</header>
+
+<div class="container">
+
+<div class="story-form">
+
+<h2>Publier une histoire</h2>
+
+<input
+id="titre"
+placeholder="Titre de l'histoire">
+
+<textarea
+id="contenu"
+rows="8"
+placeholder="Écris ton histoire...">
+</textarea>
+
+<button onclick="publier()">
+Publier
+</button>
+
+</div>
+
+<div id="stories"></div>
+
+</div>
+
+<script>
+
+let stories =
+JSON.parse(
+localStorage.getItem("stories")
+) || [];
+
+function afficherStories(){
+
+    let html = "";
+
+    stories.forEach(story => {
+
+        html += `
+        <div class="story">
+            <h3>${story.titre}</h3>
+            <p>${story.contenu}</p>
+        </div>
+        `;
+
+    });
+
+    document
+    .getElementById("stories")
+    .innerHTML = html;
+}
+
+function publier(){
+
+    const titre =
+    document.getElementById("titre").value;
+
+    const contenu =
+    document.getElementById("contenu").value;
+
+    if(!titre || !contenu){
+
+        alert("Complète tous les champs");
+
+        return;
+    }
+
+    stories.unshift({
+        titre,
+        contenu
+    });
+
+    localStorage.setItem(
+        "stories",
+        JSON.stringify(stories)
+    );
+
+    document.getElementById("titre").value="";
+    document.getElementById("contenu").value="";
+
+    afficherStories();
+}
+
+afficherStories();
+
+</script>
+
+</body>
+</html>
