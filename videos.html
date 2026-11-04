@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidéos - NocturnaTV</title>
+
+<style>
+
+body{
+    margin:0;
+    background:#050505;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+header{
+    background:#120000;
+    border-bottom:2px solid red;
+    text-align:center;
+    padding:20px;
+}
+
+h1{
+    color:red;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.form{
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:30px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    background:#222;
+    color:white;
+    border:none;
+}
+
+button{
+    background:red;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    cursor:pointer;
+}
+
+.video-card{
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    border-left:4px solid red;
+}
+
+iframe{
+    width:100%;
+    height:400px;
+    margin-top:10px;
+}
+
+.retour{
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+
+<h1>🎥 Vidéos d'Horreur</h1>
+
+<p>Partage les vidéos les plus terrifiantes.</p>
+
+<a class="retour" href="index.html">
+← Retour à l'accueil
+</a>
+
+</header>
+
+<div class="container">
+
+<div class="form">
+
+<h2>Ajouter une vidéo YouTube</h2>
+
+<input
+id="titre"
+placeholder="Titre de la vidéo">
+
+<input
+id="youtube"
+placeholder="Lien YouTube">
+
+<button onclick="publierVideo()">
+Publier
+</button>
+
+</div>
+
+<div id="videos"></div>
+
+</div>
+
+<script>
+
+let videos =
+JSON.parse(
+localStorage.getItem("videos")
+) || [];
+
+function afficherVideos(){
+
+let html = "";
+
+videos.forEach(video => {
+
+html += `
+<div class="video-card">
+
+<h3>${video.titre}</h3>
+
+<iframe
+src="https://www.youtube.com/embed/${video.idYoutube}"
+allowfullscreen>
+</iframe>
+
+</div>
+`;
+
+});
+
+document
+.getElementById("videos")
+.innerHTML = html;
+
+}
+
+function publierVideo(){
+
+const titre =
+document.getElementById(
+"titre"
+).value;
+
+const lien =
+document.getElementById(
+"youtube"
+).value;
+
+if(!titre || !lien){
+
+alert(
+"Complète tous les champs"
+);
+
+return;
+
+}
+
+let idYoutube = "";
+
+if(
+lien.includes("watch?v=")
+){
+
+idYoutube =
+lien
+.split("watch?v=")[1]
+.split("&")[0];
+
+}else{
+
+alert(
+"Lien YouTube invalide"
+);
+
+return;
+}
+
+videos.unshift({
+titre,
+idYoutube
+});
+
+localStorage.setItem(
+"videos",
+JSON.stringify(videos)
+);
+
+document.getElementById(
+"titre"
+).value = "";
+
+document.getElementById(
+"youtube"
+).value = "";
+
+afficherVideos();
+
+}
+
+afficherVideos();
+
+</script>
+
+</body>
+</html>
