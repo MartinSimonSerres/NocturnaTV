@@ -131,17 +131,14 @@ window.supabase.createClient(
   SUPABASE_KEY
 );
 
-async function afficherVideos(){
+async function afficherVideos() {
 
-  const { data, error } =
-  await supabase
+  const { data, error } = await supabase
     .from("videos")
     .select("*")
-    .order("id", {
-      ascending: false
-    });
+    .order("id", { ascending: false });
 
-  if(error){
+  if (error) {
     console.error(error);
     return;
   }
@@ -151,52 +148,43 @@ async function afficherVideos(){
   data.forEach(video => {
 
     html += `
-    <div class="video-card">
+      <div class="video-card">
+        <h3>${video.titre}</h3>
 
-      <h3>${video.titre}</h3>
+        <iframe
+          src="https://www.youtube.com/embed/${video.youtube_id}"
+          allowfullscreen>
+        </iframe>
 
-      <iframe
-      src="https://www.youtube.com/embed/${video.youtube_id}"
-      allowfullscreen>
-      </iframe>
-
-    </div>
+      </div>
     `;
 
   });
 
-  document
-    .getElementById("videos")
-    .innerHTML = html;
+  document.getElementById("videos").innerHTML = html;
 }
 
-async function publierVideo(){
+async function publierVideo() {
 
   const titre =
-  document.getElementById(
-    "titre"
-  ).value;
+    document.getElementById("titre").value;
 
   const lien =
-  document.getElementById(
-    "youtube"
-  ).value;
+    document.getElementById("youtube").value;
 
-  if(!titre || !lien){
+  if (!titre || !lien) {
     alert("Complète tous les champs");
     return;
   }
 
   let youtube_id = "";
 
-  if(lien.includes("watch?v=")){
+  if (lien.includes("watch?v=")) {
 
     youtube_id =
-      lien
-      .split("watch?v=")[1]
-      .split("&")[0];
+      lien.split("watch?v=")[1].split("&")[0];
 
-  }else{
+  } else {
 
     alert("Lien YouTube invalide");
     return;
@@ -204,28 +192,23 @@ async function publierVideo(){
   }
 
   const { error } =
-  await supabase
-    .from("videos")
-    .insert([
-      {
-        titre,
-        youtube_id
-      }
-    ]);
+    await supabase
+      .from("videos")
+      .insert([
+        {
+          titre,
+          youtube_id
+        }
+      ]);
 
-  if(error){
+  if (error) {
     console.error(error);
     alert("Erreur lors de la publication");
     return;
   }
 
-  document.getElementById(
-    "titre"
-  ).value = "";
-
-  document.getElementById(
-    "youtube"
-  ).value = "";
+  document.getElementById("titre").value = "";
+  document.getElementById("youtube").value = "";
 
   afficherVideos();
 }
@@ -233,5 +216,3 @@ async function publierVideo(){
 afficherVideos();
 
 </script>
-</body>
-</html>
