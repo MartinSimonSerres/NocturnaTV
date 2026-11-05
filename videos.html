@@ -75,6 +75,9 @@ iframe{
 }
 
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    
 </head>
 <body>
 
@@ -116,105 +119,119 @@ Publier
 
 <script>
 
-let videos =
-JSON.parse(
-localStorage.getItem("videos")
-) || [];
+const SUPABASE_URL =
+"https://ueiyahynvavqgnewqqjp.supabase.co";
 
-function afficherVideos(){
+const SUPABASE_KEY =
+"sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
 
-let html = "";
-
-videos.forEach(video => {
-
-html += `
-<div class="video-card">
-
-<h3>${video.titre}</h3>
-
-<iframe
-src="https://www.youtube.com/embed/${video.idYoutube}"
-allowfullscreen>
-</iframe>
-
-</div>
-`;
-
-});
-
-document
-.getElementById("videos")
-.innerHTML = html;
-
-}
-
-function publierVideo(){
-
-const titre =
-document.getElementById(
-"titre"
-).value;
-
-const lien =
-document.getElementById(
-"youtube"
-).value;
-
-if(!titre || !lien){
-
-alert(
-"Complète tous les champs"
+const supabase =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
 );
 
-return;
+async function afficherVideos(){
 
+  const { data, error } =
+  await supabase
+    .from("videos")
+    .select("*")
+    .order("id", {
+      ascending: false
+    });
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  let html = "";
+
+  data.forEach(video => {
+
+    html += `
+    <div class="video-card">
+
+      <h3>${video.titre}</h3>
+
+      <iframe
+      src="https://www.youtube.com/embed/${video.youtube_id}"
+      allowfullscreen>
+      </iframe>
+
+    </div>
+    `;
+
+  });
+
+  document
+    .getElementById("videos")
+    .innerHTML = html;
 }
 
-let idYoutube = "";
+async function publierVideo(){
 
-if(
-lien.includes("watch?v=")
-){
+  const titre =
+  document.getElementById(
+    "titre"
+  ).value;
 
-idYoutube =
-lien
-.split("watch?v=")[1]
-.split("&")[0];
+  const lien =
+  document.getElementById(
+    "youtube"
+  ).value;
 
-}else{
+  if(!titre || !lien){
+    alert("Complète tous les champs");
+    return;
+  }
 
-alert(
-"Lien YouTube invalide"
-);
+  let youtube_id = "";
 
-return;
-}
+  if(lien.includes("watch?v=")){
 
-videos.unshift({
-titre,
-idYoutube
-});
+    youtube_id =
+      lien
+      .split("watch?v=")[1]
+      .split("&")[0];
 
-localStorage.setItem(
-"videos",
-JSON.stringify(videos)
-);
+  }else{
 
-document.getElementById(
-"titre"
-).value = "";
+    alert("Lien YouTube invalide");
+    return;
 
-document.getElementById(
-"youtube"
-).value = "";
+  }
 
-afficherVideos();
+  const { error } =
+  await supabase
+    .from("videos")
+    .insert([
+      {
+        titre,
+        youtube_id
+      }
+    ]);
 
+  if(error){
+    console.error(error);
+    alert("Erreur lors de la publication");
+    return;
+  }
+
+  document.getElementById(
+    "titre"
+  ).value = "";
+
+  document.getElementById(
+    "youtube"
+  ).value = "";
+
+  afficherVideos();
 }
 
 afficherVideos();
 
 </script>
-
 </body>
 </html>
