@@ -263,35 +263,39 @@ async function publierVideo(){
 
 async function likerVideo(id){
 
-    const { data } =
+    const { data, error: lectureError } =
     await supabaseClient
         .from("videos")
         .select("likes")
         .eq("id", id)
         .single();
 
+    console.log("Données lues :", data);
+    console.log("Erreur lecture :", lectureError);
+
+    if(lectureError){
+        return;
+    }
+
     const likesActuels =
         data.likes || 0;
 
-    const { error } =
+    const { error: updateError } =
     await supabaseClient
         .from("videos")
         .update({
-            likes:
-            likesActuels + 1
+            likes: likesActuels + 1
         })
         .eq("id", id);
 
-    if(error){
+    console.log("Erreur update :", updateError);
 
-        console.error(error);
-
+    if(updateError){
         return;
     }
 
     afficherVideos();
 }
-
 afficherVideos();
 
 </script>
