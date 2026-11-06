@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vidéos - NocturnaTV</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 body{
@@ -55,6 +57,10 @@ button{
     cursor:pointer;
 }
 
+button:hover{
+    background:#cc0000;
+}
+
 .video-card{
     background:#111;
     padding:20px;
@@ -75,10 +81,8 @@ iframe{
 }
 
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
 </head>
+
 <body>
 
 <header>
@@ -125,94 +129,127 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
 
-const supabase =
+const supabaseClient =
 window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+    SUPABASE_URL,
+    SUPABASE_KEY
 );
 
-async function afficherVideos() {
+async function afficherVideos(){
 
-  const { data, error } = await supabase
-    .from("videos")
-    .select("*")
-    .order("id", { ascending: false });
+    const { data, error } =
+    await supabaseClient
+        .from("videos")
+        .select("*")
+        .order("id", {
+            ascending:false
+        });
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+    if(error){
+        console.error(error);
+        return;
+    }
 
-  let html = "";
+    let html = "";
 
-  data.forEach(video => {
+    data.forEach(video => {
 
-    html += `
-      <div class="video-card">
-        <h3>${video.titre}</h3>
+        html += `
+        <div class="video-card">
 
-        <iframe
-          src="https://www.youtube.com/embed/${video.youtube_id}"
-          allowfullscreen>
-        </iframe>
+            <h3>${video.titre}</h3>
 
-      </div>
-    `;
+            <iframe
+            src="https://www.youtube.com/embed/${video.youtube_id}"
+            allowfullscreen>
+            </iframe>
 
-  });
+        </div>
+        `;
 
-  document.getElementById("videos").innerHTML = html;
+    });
+
+    document.getElementById(
+        "videos"
+    ).innerHTML = html;
 }
 
-async function publierVideo() {
+async function publierVideo(){
 
-  const titre =
-    document.getElementById("titre").value;
+    const titre =
+    document.getElementById(
+        "titre"
+    ).value;
 
-  const lien =
-    document.getElementById("youtube").value;
+    const lien =
+    document.getElementById(
+        "youtube"
+    ).value;
 
-  if (!titre || !lien) {
-    alert("Complète tous les champs");
-    return;
-  }
+    if(!titre || !lien){
 
-  let youtube_id = "";
+        alert(
+        "Complète tous les champs"
+        );
 
-  if (lien.includes("watch?v=")) {
+        return;
+    }
 
-    youtube_id =
-      lien.split("watch?v=")[1].split("&")[0];
+    let youtube_id = "";
 
-  } else {
+    if(
+        lien.includes("watch?v=")
+    ){
 
-    alert("Lien YouTube invalide");
-    return;
+        youtube_id =
+        lien
+        .split("watch?v=")[1]
+        .split("&")[0];
 
-  }
+    }else{
 
-  const { error } =
-    await supabase
-      .from("videos")
-      .insert([
-        {
-          titre,
-          youtube_id
-        }
-      ]);
+        alert(
+        "Lien YouTube invalide"
+        );
 
-  if (error) {
-    console.error(error);
-    alert("Erreur lors de la publication");
-    return;
-  }
+        return;
+    }
 
-  document.getElementById("titre").value = "";
-  document.getElementById("youtube").value = "";
+    const { error } =
+    await supabaseClient
+        .from("videos")
+        .insert([
+            {
+                titre,
+                youtube_id
+            }
+        ]);
 
-  afficherVideos();
+    if(error){
+
+        console.error(error);
+
+        alert(
+        "Erreur lors de la publication"
+        );
+
+        return;
+    }
+
+    document.getElementById(
+        "titre"
+    ).value = "";
+
+    document.getElementById(
+        "youtube"
+    ).value = "";
+
+    afficherVideos();
 }
 
 afficherVideos();
 
 </script>
+
+</body>
+</html>
