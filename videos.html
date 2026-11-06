@@ -55,6 +55,7 @@ button{
     padding:10px 20px;
     border:none;
     cursor:pointer;
+    border-radius:6px;
 }
 
 button:hover{
@@ -78,6 +79,10 @@ iframe{
 .retour{
     color:white;
     text-decoration:none;
+}
+
+.like-btn{
+    margin-top:15px;
 }
 
 </style>
@@ -164,6 +169,14 @@ async function afficherVideos(){
             allowfullscreen>
             </iframe>
 
+            <br>
+
+            <button
+            class="like-btn"
+            onclick="likerVideo(${video.id})">
+                ❤️ ${video.likes || 0}
+            </button>
+
         </div>
         `;
 
@@ -221,7 +234,8 @@ async function publierVideo(){
         .insert([
             {
                 titre,
-                youtube_id
+                youtube_id,
+                likes:0
             }
         ]);
 
@@ -243,6 +257,37 @@ async function publierVideo(){
     document.getElementById(
         "youtube"
     ).value = "";
+
+    afficherVideos();
+}
+
+async function likerVideo(id){
+
+    const { data } =
+    await supabaseClient
+        .from("videos")
+        .select("likes")
+        .eq("id", id)
+        .single();
+
+    const likesActuels =
+        data.likes || 0;
+
+    const { error } =
+    await supabaseClient
+        .from("videos")
+        .update({
+            likes:
+            likesActuels + 1
+        })
+        .eq("id", id);
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
 
     afficherVideos();
 }
