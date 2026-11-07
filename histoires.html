@@ -72,6 +72,13 @@ button:hover{
     border-radius:5px;
 }
 
+.comment{
+    background:#1a1a1a;
+    padding:8px;
+    margin-top:5px;
+    border-radius:5px;
+}
+
 .retour{
     color:white;
     text-decoration:none;
@@ -84,6 +91,7 @@ button:hover{
 </style>
 
 </head>
+
 <body>
 
 <header>
@@ -149,8 +157,7 @@ async function afficherStories(){
         });
 
     if(error){
-        alert(JSON.stringify(error));
-console.error(error);
+        console.error(error);
         return;
     }
 
@@ -171,6 +178,27 @@ console.error(error);
                 ❤️ ${story.likes || 0}
             </button>
 
+            <hr>
+
+            <h4>💬 Commentaires</h4>
+
+            <input
+            id="pseudo-${story.id}"
+            placeholder="Votre pseudo">
+
+            <input
+            id="commentaire-${story.id}"
+            placeholder="Votre commentaire">
+
+            <button
+            onclick="ajouterCommentaireStory(${story.id})">
+                💬 Envoyer
+            </button>
+
+            <div id="comments-${story.id}">
+                Chargement...
+            </div>
+
         </div>
         `;
 
@@ -179,6 +207,10 @@ console.error(error);
     document.getElementById(
         "stories"
     ).innerHTML = html;
+
+    data.forEach(story => {
+        chargerCommentairesStory(story.id);
+    });
 }
 
 async function publier(){
@@ -247,7 +279,6 @@ async function likerStory(id){
     const likesActuels =
         data.likes || 0;
 
-    const { error } =
     await supabaseClient
         .from("stories")
         .update({
@@ -256,14 +287,95 @@ async function likerStory(id){
         })
         .eq("id", id);
 
+    afficherStories();
+}
+
+async function ajouterCommentaireStory(storyId){
+
+    const auteur =
+    document.getElementById(
+        `pseudo-${storyId}`
+    ).value;
+
+    const contenu =
+    document.getElementById(
+        `commentaire-${storyId}`
+    ).value;
+
+    if(!auteur || !contenu){
+
+        alert(
+        "Complète tous les champs"
+        );
+
+        return;
+    }
+
+    const { error } =
+    await supabaseClient
+        .from("comments")
+        .insert([
+        {
+            story_id: storyId,
+            auteur,
+            contenu
+        }
+        ]);
+
     if(error){
 
         console.error(error);
+
+        alert(
+        "Erreur commentaire"
+        );
 
         return;
     }
 
     afficherStories();
+}
+
+async function chargerCommentairesStory(storyId){
+
+    const { data, error } =
+    await supabaseClient
+        .from("comments")
+        .select("*")
+        .eq("story_id", storyId)
+        .order("id", {
+            ascending:false
+        });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    let html = "";
+
+    data.forEach(comment => {
+
+        html += `
+        <div class="comment">
+
+            <strong>${comment.auteur}</strong>
+            :
+            ${comment.contenu}
+
+        </div>
+        `;
+
+    });
+
+    const zone =
+    document.getElementById(
+        `comments-${storyId}`
+    );
+
+    if(zone){
+        zone.innerHTML = html;
+    }
 }
 
 afficherStories();
