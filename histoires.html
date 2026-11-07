@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Histoires - NocturnaTV</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 body{
@@ -55,6 +57,11 @@ button{
     border:none;
     padding:10px 20px;
     cursor:pointer;
+    border-radius:5px;
+}
+
+button:hover{
+    background:#cc0000;
 }
 
 .story{
@@ -70,10 +77,12 @@ button{
     text-decoration:none;
 }
 
+.like-btn{
+    margin-top:15px;
+}
+
 </style>
 
-https://cdn.jsdelivr.net/npm/@supabase/supabase-jsscript>
-    
 </head>
 <body>
 
@@ -81,9 +90,7 @@ https://cdn.jsdelivr.net/npm/@supabase/supabase-jsscript>
 
 <h1>📖 Histoires d'Horreur</h1>
 
-<p>
-Partage tes cauchemars...
-</p>
+<p>Partage tes cauchemars...</p>
 
 <a class="retour" href="index.html">
 ← Retour à l'accueil
@@ -119,58 +126,141 @@ Publier
 
 <script>
 
-let stories =
-JSON.parse(
-localStorage.getItem("stories")
-) || [];
+const SUPABASE_URL =
+"https://ueiyahynvavqgnewqqjp.supabase.co";
 
-function afficherStories(){
+const SUPABASE_KEY =
+"sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+async function afficherStories(){
+
+    const { data, error } =
+    await supabaseClient
+        .from("stories")
+        .select("*")
+        .order("id", {
+            ascending:false
+        });
+
+    if(error){
+        console.error(error);
+        return;
+    }
 
     let html = "";
 
-    stories.forEach(story => {
+    data.forEach(story => {
 
         html += `
         <div class="story">
+
             <h3>${story.titre}</h3>
+
             <p>${story.contenu}</p>
+
+            <button
+            class="like-btn"
+            onclick="likerStory(${story.id})">
+                ❤️ ${story.likes || 0}
+            </button>
+
         </div>
         `;
 
     });
 
-    document
-    .getElementById("stories")
-    .innerHTML = html;
+    document.getElementById(
+        "stories"
+    ).innerHTML = html;
 }
 
-function publier(){
+async function publier(){
 
     const titre =
-    document.getElementById("titre").value;
+    document.getElementById(
+        "titre"
+    ).value;
 
     const contenu =
-    document.getElementById("contenu").value;
+    document.getElementById(
+        "contenu"
+    ).value;
 
     if(!titre || !contenu){
 
-        alert("Complète tous les champs");
+        alert(
+        "Complète tous les champs"
+        );
 
         return;
     }
 
-    stories.unshift({
-        titre,
-        contenu
-    });
+    const { error } =
+    await supabaseClient
+        .from("stories")
+        .insert([
+            {
+                titre,
+                contenu,
+                likes:0
+            }
+        ]);
 
-    localStorage.setItem(
-        "stories",
-        JSON.stringify(stories)
-    );
+    if(error){
 
-    document.getElementById("titre").value="";
-    document.getElementById("contenu").value="";
+        console.error(error);
+
+        alert(
+        "Erreur lors de la publication"
+        );
+
+        return;
+    }
+
+    document.getElementById(
+        "titre"
+    ).value = "";
+
+    document.getElementById(
+        "contenu"
+    ).value = "";
+
+    afficherStories();
+}
+
+async function likerStory(id){
+
+    const { data } =
+    await supabaseClient
+        .from("stories")
+        .select("likes")
+        .eq("id", id)
+        .single();
+
+    const likesActuels =
+        data.likes || 0;
+
+    const { error } =
+    await supabaseClient
+        .from("stories")
+        .update({
+            likes:
+            likesActuels + 1
+        })
+        .eq("id", id);
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
 
     afficherStories();
 }
