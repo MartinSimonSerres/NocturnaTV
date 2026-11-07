@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vidéos - NocturnaTV</title>
+<title>NocturnaTV - Vidéos</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -17,10 +17,10 @@ body{
 }
 
 header{
-    background:#120000;
-    border-bottom:2px solid red;
     text-align:center;
+    background:#150000;
     padding:20px;
+    border-bottom:2px solid red;
 }
 
 h1{
@@ -33,11 +33,12 @@ h1{
     padding:20px;
 }
 
-.form{
+.card{
     background:#111;
     padding:20px;
     border-radius:10px;
-    margin-bottom:30px;
+    margin-bottom:20px;
+    border-left:4px solid red;
 }
 
 input{
@@ -52,22 +53,14 @@ input{
 button{
     background:red;
     color:white;
-    padding:10px 20px;
     border:none;
+    padding:10px 20px;
     cursor:pointer;
-    border-radius:6px;
+    border-radius:5px;
 }
 
 button:hover{
     background:#cc0000;
-}
-
-.video-card{
-    background:#111;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    border-left:4px solid red;
 }
 
 iframe{
@@ -76,18 +69,20 @@ iframe{
     margin-top:10px;
 }
 
+.comment{
+    background:#1a1a1a;
+    padding:8px;
+    margin-top:5px;
+    border-radius:5px;
+}
+
 .retour{
     color:white;
     text-decoration:none;
 }
 
-.like-btn{
-    margin-top:15px;
-}
-
 </style>
 </head>
-
 <body>
 
 <header>
@@ -104,9 +99,9 @@ iframe{
 
 <div class="container">
 
-<div class="form">
+<div class="card">
 
-<h2>Ajouter une vidéo YouTube</h2>
+<h2>Ajouter une vidéo</h2>
 
 <input
 id="titre"
@@ -132,7 +127,7 @@ const SUPABASE_URL =
 "https://ueiyahynvavqgnewqqjp.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
+"VOTRE_CLE_SUPABASE";
 
 const supabaseClient =
 window.supabase.createClient(
@@ -160,22 +155,42 @@ async function afficherVideos(){
     data.forEach(video => {
 
         html += `
-        <div class="video-card">
+        <div class="card">
 
-            <h3>${video.titre}</h3>
+            <h2>${video.titre}</h2>
 
             <iframe
             src="https://www.youtube.com/embed/${video.youtube_id}"
             allowfullscreen>
             </iframe>
 
-            <br>
+            <br><br>
 
             <button
-            class="like-btn"
             onclick="likerVideo(${video.id})">
                 ❤️ ${video.likes || 0}
             </button>
+
+            <hr>
+
+            <h3>💬 Commentaires</h3>
+
+            <input
+            id="pseudo-${video.id}"
+            placeholder="Votre pseudo">
+
+            <input
+            id="commentaire-${video.id}"
+            placeholder="Votre commentaire">
+
+            <button
+            onclick="ajouterCommentaire(${video.id})">
+                Envoyer
+            </button>
+
+            <div id="comments-${video.id}">
+                Chargement...
+            </div>
 
         </div>
         `;
@@ -185,6 +200,10 @@ async function afficherVideos(){
     document.getElementById(
         "videos"
     ).innerHTML = html;
+
+    data.forEach(video => {
+        chargerCommentaires(video.id);
+    });
 }
 
 async function publierVideo(){
@@ -210,9 +229,7 @@ async function publierVideo(){
 
     let youtube_id = "";
 
-    if(
-        lien.includes("watch?v=")
-    ){
+    if(lien.includes("watch?v=")){
 
         youtube_id =
         lien
@@ -244,56 +261,124 @@ async function publierVideo(){
         console.error(error);
 
         alert(
-        "Erreur lors de la publication"
+        "Erreur publication vidéo"
         );
 
         return;
     }
-
-    document.getElementById(
-        "titre"
-    ).value = "";
-
-    document.getElementById(
-        "youtube"
-    ).value = "";
 
     afficherVideos();
 }
 
 async function likerVideo(id){
 
-    const { data, error: lectureError } =
+    const { data } =
     await supabaseClient
         .from("videos")
         .select("likes")
         .eq("id", id)
         .single();
 
-   
-
-    if(lectureError){
-        return;
-    }
-
     const likesActuels =
-        data.likes || 0;
+    data.likes || 0;
 
-    const { error: updateError } =
     await supabaseClient
         .from("videos")
         .update({
-            likes: likesActuels + 1
+            likes:
+            likesActuels + 1
         })
         .eq("id", id);
 
-    
-    if(updateError){
+    afficherVideos();
+}
+
+async function ajouterCommentaire(videoId){
+
+    const auteur =
+    document.getElementById(
+        `pseudo-${videoId}`
+    ).value;
+
+    const contenu =
+    document.getElementById(
+        `commentaire-${videoId}`
+    ).value;
+
+    if(!auteur || !contenu){
+
+        alert(
+        "Complète tous les champs"
+        );
+
+        return;
+    }
+
+    const { error } =
+    await supabaseClient
+        .from("comments")
+        .insert([
+        {
+            video_id: videoId,
+            auteur,
+            contenu
+        }
+        ]);
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+        "Erreur commentaire"
+        );
+
         return;
     }
 
     afficherVideos();
 }
+
+async function chargerCommentaires(videoId){
+
+    const { data, error } =
+    await supabaseClient
+        .from("comments")
+        .select("*")
+        .eq("video_id", videoId)
+        .order("id", {
+            ascending:false
+        });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    let html = "";
+
+    data.forEach(comment => {
+
+        html += `
+        <div class="comment">
+            <strong>${comment.auteur}</strong>
+            :
+            ${comment.contenu}
+        </div>
+        `;
+
+    });
+
+    const zone =
+    document.getElementById(
+        `comments-${videoId}`
+    );
+
+    if(zone){
+        zone.innerHTML = html;
+    }
+}
+
 afficherVideos();
 
 </script>
