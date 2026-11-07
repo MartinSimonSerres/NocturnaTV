@@ -324,14 +324,12 @@ async function ajouterCommentaireStory(storyId){
 
     if(error){
 
-        console.error(error);
+    console.log("Erreur commentaire :", error);
 
-        alert(
-        "Erreur commentaire"
-        );
+    alert(JSON.stringify(error));
 
-        return;
-    }
+    return;
+}
 
     afficherStories();
 }
