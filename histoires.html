@@ -182,13 +182,9 @@ async function afficherStories(){
 
             <h4>💬 Commentaires</h4>
 
-            <input
-            id="pseudo-${story.id}"
-            placeholder="Votre pseudo">
-
-            <input
-            id="commentaire-${story.id}"
-            placeholder="Votre commentaire">
+<input
+id="commentaire-${story.id}"
+placeholder="Votre commentaire">
 
             <button
             onclick="ajouterCommentaireStory(${story.id})">
@@ -292,20 +288,39 @@ async function likerStory(id){
 
 async function ajouterCommentaireStory(storyId){
 
-    const auteur =
-    document.getElementById(
-        `pseudo-${storyId}`
-    ).value;
+    const {
+        data:userData
+    } =
+    await supabaseClient.auth.getUser();
+
+    const user =
+    userData.user;
+
+    if(!user){
+
+        alert(
+        "Connecte-toi pour commenter"
+        );
+
+        return;
+    }
+
+    const { data:profil } =
+    await supabaseClient
+        .from("profiles")
+        .select("pseudo")
+        .eq("id", user.id)
+        .single();
 
     const contenu =
     document.getElementById(
         `commentaire-${storyId}`
     ).value;
 
-    if(!auteur || !contenu){
+    if(!contenu){
 
         alert(
-        "Complète tous les champs"
+        "Écris un commentaire"
         );
 
         return;
@@ -317,19 +332,21 @@ async function ajouterCommentaireStory(storyId){
         .insert([
         {
             story_id: storyId,
-            auteur,
+            auteur: profil.pseudo,
             contenu
         }
         ]);
 
     if(error){
 
-    console.log("Erreur commentaire :", error);
+        console.error(error);
 
-    alert(JSON.stringify(error));
+        alert(
+        "Erreur commentaire"
+        );
 
-    return;
-}
+        return;
+    }
 
     afficherStories();
 }
