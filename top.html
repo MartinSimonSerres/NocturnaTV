@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Histoires - NocturnaTV</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    background:#050505;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+}
+
+header{
+    background:#120000;
+    text-align:center;
+    padding:20px;
+    border-bottom:2px solid red;
+}
+
+h1{
+    color:red;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.story{
+    background:#111;
+    border-left:4px solid red;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+.rank{
+    color:gold;
+    font-size:1.5rem;
+    font-weight:bold;
+}
+
+.retour{
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+
+<h1>🏆 Classement des Histoires</h1>
+
+<p>Les histoires les plus appréciées de NocturnaTV</p>
+
+<a class="retour" href="index.html">
+← Retour à l'accueil
+</a>
+
+</header>
+
+<div class="container" id="classement">
+
+Chargement...
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://ueiyahynvavqgnewqqjp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+async function chargerClassement(){
+
+    const { data, error } =
+    await supabaseClient
+        .from("stories")
+        .select("*")
+        .order("likes", {
+            ascending:false
+        });
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+    let html = "";
+
+    data.forEach((story,index) => {
+
+        html += `
+        <div class="story">
+
+            <div class="rank">
+                #${index + 1}
+            </div>
+
+            <h2>${story.titre}</h2>
+
+            <p>${story.contenu}</p>
+
+            <p>
+                ❤️ ${story.likes || 0}
+            </p>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "classement"
+    ).innerHTML = html;
+}
+
+chargerClassement();
+
+</script>
+
+</body>
+</html>
