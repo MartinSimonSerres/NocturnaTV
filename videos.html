@@ -82,6 +82,7 @@ iframe{
 }
 
 </style>
+
 </head>
 <body>
 
@@ -141,12 +142,10 @@ async function afficherVideos(){
     await supabaseClient
         .from("videos")
         .select("*")
-        .order("id", {
-            ascending:false
-        });
+        .order("id", { ascending:false });
 
     if(error){
-        console.log("Erreur complète :", error);
+        console.error(error);
         return;
     }
 
@@ -175,9 +174,9 @@ async function afficherVideos(){
 
             <h3>💬 Commentaires</h3>
 
-<input
-id="commentaire-${video.id}"
-placeholder="Votre commentaire">
+            <input
+            id="commentaire-${video.id}"
+            placeholder="Votre commentaire">
 
             <button
             onclick="ajouterCommentaire(${video.id})">
@@ -185,7 +184,6 @@ placeholder="Votre commentaire">
             </button>
 
             <div id="comments-${video.id}">
-                Chargement...
             </div>
 
         </div>
@@ -193,9 +191,8 @@ placeholder="Votre commentaire">
 
     });
 
-    document.getElementById(
-        "videos"
-    ).innerHTML = html;
+    document.getElementById("videos").innerHTML =
+    html;
 
     data.forEach(video => {
         chargerCommentaires(video.id);
@@ -205,21 +202,14 @@ placeholder="Votre commentaire">
 async function publierVideo(){
 
     const titre =
-    document.getElementById(
-        "titre"
-    ).value;
+    document.getElementById("titre").value;
 
     const lien =
-    document.getElementById(
-        "youtube"
-    ).value;
+    document.getElementById("youtube").value;
 
     if(!titre || !lien){
 
-        alert(
-        "Complète tous les champs"
-        );
-
+        alert("Complète tous les champs");
         return;
     }
 
@@ -228,16 +218,12 @@ async function publierVideo(){
     if(lien.includes("watch?v=")){
 
         youtube_id =
-        lien
-        .split("watch?v=")[1]
+        lien.split("watch?v=")[1]
         .split("&")[0];
 
     }else{
 
-        alert(
-        "Lien YouTube invalide"
-        );
-
+        alert("Lien YouTube invalide");
         return;
     }
 
@@ -255,11 +241,7 @@ async function publierVideo(){
     if(error){
 
         console.error(error);
-
-        alert(
-        "Erreur publication vidéo"
-        );
-
+        alert("Erreur publication vidéo");
         return;
     }
 
@@ -281,8 +263,7 @@ async function likerVideo(id){
     await supabaseClient
         .from("videos")
         .update({
-            likes:
-            likesActuels + 1
+            likes: likesActuels + 1
         })
         .eq("id", id);
 
@@ -336,31 +317,6 @@ async function ajouterCommentaire(videoId){
         {
             video_id: videoId,
             auteur: profil.pseudo,
-            contenu
-        }
-        ]);
-
-    if(error){
-
-        console.error(error);
-
-        alert(
-        "Erreur commentaire"
-        );
-
-        return;
-    }
-
-    afficherVideos();
-}
-
-    const { error } =
-    await supabaseClient
-        .from("comments")
-        .insert([
-        {
-            video_id: videoId,
-            auteur,
             contenu
         }
         ]);
