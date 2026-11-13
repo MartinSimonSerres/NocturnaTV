@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Vidéos - NocturnaTV</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    background:#050505;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+}
+
+header{
+    background:#120000;
+    text-align:center;
+    padding:20px;
+    border-bottom:2px solid red;
+}
+
+h1{
+    color:red;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.video{
+    background:#111;
+    border-left:4px solid red;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+.rank{
+    color:gold;
+    font-size:1.5rem;
+    font-weight:bold;
+}
+
+iframe{
+    width:100%;
+    height:400px;
+    margin-top:10px;
+}
+
+.retour{
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+
+<h1>🏆 Classement des Vidéos</h1>
+
+<p>Les vidéos les plus appréciées de NocturnaTV</p>
+
+<a class="retour" href="index.html">
+← Retour à l'accueil
+</a>
+
+</header>
+
+<div class="container" id="classement">
+
+Chargement...
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://ueiyahynvavqgnewqqjp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lF3VPe_BGfTNLDm-qe70fg_ZGQNA6jJ";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+async function chargerClassement(){
+
+    const { data, error } =
+    await supabaseClient
+        .from("videos")
+        .select("*")
+        .order("likes", {
+            ascending:false
+        });
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+    let html = "";
+
+    data.forEach((video,index) => {
+
+        html += `
+        <div class="video">
+
+            <div class="rank">
+                #${index + 1}
+            </div>
+
+            <h2>${video.titre}</h2>
+
+            <iframe
+            src="https://www.youtube.com/embed/${video.youtube_id}"
+            allowfullscreen>
+            </iframe>
+
+            <p>
+                ❤️ ${video.likes || 0}
+            </p>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "classement"
+    ).innerHTML = html;
+}
+
+chargerClassement();
+
+</script>
+
+</body>
+</html>
