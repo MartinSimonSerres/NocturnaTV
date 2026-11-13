@@ -175,13 +175,9 @@ async function afficherVideos(){
 
             <h3>💬 Commentaires</h3>
 
-            <input
-            id="pseudo-${video.id}"
-            placeholder="Votre pseudo">
-
-            <input
-            id="commentaire-${video.id}"
-            placeholder="Votre commentaire">
+<input
+id="commentaire-${video.id}"
+placeholder="Votre commentaire">
 
             <button
             onclick="ajouterCommentaire(${video.id})">
@@ -295,24 +291,68 @@ async function likerVideo(id){
 
 async function ajouterCommentaire(videoId){
 
-    const auteur =
-    document.getElementById(
-        `pseudo-${videoId}`
-    ).value;
+    const {
+        data:userData
+    } =
+    await supabaseClient.auth.getUser();
+
+    const user =
+    userData.user;
+
+    if(!user){
+
+        alert(
+        "Connecte-toi pour commenter"
+        );
+
+        return;
+    }
+
+    const { data:profil } =
+    await supabaseClient
+        .from("profiles")
+        .select("pseudo")
+        .eq("id", user.id)
+        .single();
 
     const contenu =
     document.getElementById(
         `commentaire-${videoId}`
     ).value;
 
-    if(!auteur || !contenu){
+    if(!contenu){
 
         alert(
-        "Complète tous les champs"
+        "Écris un commentaire"
         );
 
         return;
     }
+
+    const { error } =
+    await supabaseClient
+        .from("comments")
+        .insert([
+        {
+            video_id: videoId,
+            auteur: profil.pseudo,
+            contenu
+        }
+        ]);
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+        "Erreur commentaire"
+        );
+
+        return;
+    }
+
+    afficherVideos();
+}
 
     const { error } =
     await supabaseClient
