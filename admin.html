@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration - NocturnaTV</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    background:#050505;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+}
+
+header{
+    background:#120000;
+    padding:20px;
+    text-align:center;
+    border-bottom:2px solid red;
+}
+
+h1{
+    color:red;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    border-left:4px solid red;
+}
+
+button{
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    margin:5px;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+button:hover{
+    background:#cc0000;
+}
+
+.retour{
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+
+<h1>👑 Administration NocturnaTV</h1>
+
+<a href="index.html" class="retour">
+← Retour à l'accueil
+</a>
+
+</header>
+
+<div class="container">
+
+<h2>📖 Histoires</h2>
+
+<div id="stories"></div>
+
+<h2>🎥 Vidéos</h2>
+
+<div id="videos"></div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://ueiyahynvavqgnewqqjp.supabase.co";
+
+const SUPABASE_KEY =
+"VOTRE_CLE_SUPABASE";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+async function chargerStories(){
+
+    const { data } =
+    await supabaseClient
+        .from("stories")
+        .select("*")
+        .order("id", {
+            ascending:false
+        });
+
+    let html = "";
+
+    data.forEach(story => {
+
+        html += `
+        <div class="card">
+
+            <h3>${story.titre}</h3>
+
+            <p>${story.contenu}</p>
+
+            <p>
+                ❤️ ${story.likes || 0}
+            </p>
+
+            <button
+            onclick="supprimerStory(${story.id})">
+                🗑 Supprimer
+            </button>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "stories"
+    ).innerHTML = html;
+}
+
+async function chargerVideos(){
+
+    const { data } =
+    await supabaseClient
+        .from("videos")
+        .select("*")
+        .order("id", {
+            ascending:false
+        });
+
+    let html = "";
+
+    data.forEach(video => {
+
+        html += `
+        <div class="card">
+
+            <h3>${video.titre}</h3>
+
+            <p>
+                ❤️ ${video.likes || 0}
+            </p>
+
+            <button
+            onclick="supprimerVideo(${video.id})">
+                🗑 Supprimer
+            </button>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "videos"
+    ).innerHTML = html;
+}
+
+async function supprimerStory(id){
+
+    const confirmation =
+    confirm(
+    "Supprimer cette histoire ?"
+    );
+
+    if(!confirmation){
+        return;
+    }
+
+    await supabaseClient
+        .from("stories")
+        .delete()
+        .eq("id", id);
+
+    chargerStories();
+}
+
+async function supprimerVideo(id){
+
+    const confirmation =
+    confirm(
+    "Supprimer cette vidéo ?"
+    );
+
+    if(!confirmation){
+        return;
+    }
+
+    await supabaseClient
+        .from("videos")
+        .delete()
+        .eq("id", id);
+
+    chargerVideos();
+}
+
+chargerStories();
+chargerVideos();
+
+</script>
+
+</body>
+</html>
